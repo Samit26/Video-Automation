@@ -110,7 +110,7 @@ Requirements:
 - Mix popular and niche hashtags
 - Focus on AI, technology, automation, innovation themes
 - Include general video engagement hashtags
-- Popular AI hashtags: #aivideo #artificialintelligence #ai #tech #automation #innovation #machinelearning #deeplearning #aiart #digital #future #algorithm #computer #technology
+- Popular AI hashtags: #aivideo #artificialintelligence #ai #tech #automation #innovation #machinelearning #deeplearning #aiart #digital #future #algorithm #computer #technology #aitools #neuralnetworks #chatgpt #gpt #openai #airevolution #robotics #coding #programming
 - Engagement hashtags: #viral #trending #amazing #creative #content #video #cool #awesome #mind-blowing #fascinating
 - Return as a single line separated by spaces
 - Start each hashtag with #

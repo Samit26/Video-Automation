@@ -123,7 +123,7 @@ class VideoService {
         logger.info(`Adding watermark to video: ${inputVideoPath}`);
         logger.info(`Watermark file path: ${this.watermarkPath}`);
         logger.info(`Output path: ${outputPath}`); // Add timeout to prevent hanging
-        const timeoutMs = 30000; // 30 seconds timeout (reduced from 1 minute)
+        const timeoutMs = 90000; // 90 seconds timeout (increased for complex watermarking)
         let ffmpegProcess;
         let timeoutId;
 
@@ -133,7 +133,7 @@ class VideoService {
               ffmpegProcess.kill("SIGKILL");
             }
             timeoutReject(
-              new Error("FFmpeg watermarking timed out after 30 seconds")
+              new Error("FFmpeg watermarking timed out after 90 seconds")
             );
           }, timeoutMs);
         });
@@ -148,14 +148,14 @@ class VideoService {
               "[watermark_scaled]pad=iw+20:ih+20:10:10:color=black@0.5[watermark_bg]",
               // Overlay watermark at top-left corner with padding for visibility
               "[0:v][watermark_bg]overlay=20:20",
-            ])
-            .outputOptions([
+            ])            .outputOptions([
               "-c:a copy", // Copy audio without re-encoding
               "-c:v libx264", // Use H.264 for video
-              "-preset ultrafast", // Faster preset for cloud environments
-              "-crf 23", // Balanced quality for speed
+              "-preset veryfast", // Very fast preset for cloud environments (faster than ultrafast)
+              "-crf 28", // Higher CRF for faster processing (less quality but much faster)
               "-pix_fmt yuv420p", // Ensure compatibility
               "-movflags +faststart", // Optimize for web streaming
+              "-threads 0", // Use all available CPU threads
             ])
             .output(outputPath)
             .on("start", (commandLine) => {

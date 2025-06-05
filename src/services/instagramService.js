@@ -230,7 +230,7 @@ class InstagramService {
   async prepareCaption(baseCaption) {
     try {
       let caption =
-        baseCaption || process.env.DEFAULT_CAPTION || "Amazing video! 🎥✨";      // Add default hashtags if not present
+        baseCaption || process.env.DEFAULT_CAPTION || "Amazing video! 🎥✨"; // Add default hashtags if not present
       const defaultHashtags =
         process.env.DEFAULT_HASHTAGS ||
         "#aivideo #artificialintelligence #ai #tech #automation #viral #video #content #innovation #amazing #trending";

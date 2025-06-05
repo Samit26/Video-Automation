@@ -148,7 +148,8 @@ class VideoService {
               "[watermark_scaled]pad=iw+20:ih+20:10:10:color=black@0.5[watermark_bg]",
               // Overlay watermark at top-left corner with padding for visibility
               "[0:v][watermark_bg]overlay=20:20",
-            ])            .outputOptions([
+            ])
+            .outputOptions([
               "-c:a copy", // Copy audio without re-encoding
               "-c:v libx264", // Use H.264 for video
               "-preset veryfast", // Very fast preset for cloud environments (faster than ultrafast)

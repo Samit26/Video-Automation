@@ -2,12 +2,9 @@ services:
   - type: web
     name: video-automation-service
     env: node
-    plan: free
-    buildCommand: npm install && npm run build-ffmpeg
+    plan: free    buildCommand: npm install
     startCommand: npm start
-    # Install FFmpeg via apt packages
-    aptPackages:
-      - ffmpeg
+    # Note: FFmpeg removed since watermarking is disabled for faster processing
     envVars:
       - key: NODE_ENV
         value: production

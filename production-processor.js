@@ -183,17 +183,20 @@ class ProductionVideoProcessor {
       logger.info("✅ Video downloaded", {
         path: downloadPath,
         duration: `${((Date.now() - startTime) / 1000).toFixed(1)}s`,
-      }); // Step 2: Add watermark
-      logger.info("🎨 Step 2: Adding watermark...");
-      const watermarkStartTime = Date.now();
-      processedPath = await this.videoService.addWatermarkWithFallback(
+      });
+
+      // Step 2: Process video (no watermarking)
+      logger.info("🎬 Step 2: Processing video...");
+      const processStartTime = Date.now();
+      processedPath = await this.videoService.processVideo(
         downloadPath,
         "./output"
       );
       this.tempFiles.add(processedPath);
-      logger.info("✅ Watermark added", {
+      logger.info("✅ Video processed", {
         path: processedPath,
-        duration: `${((Date.now() - watermarkStartTime) / 1000).toFixed(1)}s`,
+        duration: `${((Date.now() - processStartTime) / 1000).toFixed(1)}s`,
+        note: "No watermark applied for faster processing",
       });
 
       // Step 3: Generate AI caption

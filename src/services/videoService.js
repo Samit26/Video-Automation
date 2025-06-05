@@ -35,19 +35,35 @@ class VideoService {
         }
       }
 
-      // Test FFmpeg availability
+      // Test FFmpeg availability with better diagnostics
       ffmpeg.getAvailableFormats((err, formats) => {
         if (err) {
           logger.error("FFmpeg is not available", {
             error: err.message,
             suggestion: "Install FFmpeg via apt-packages in render.yaml",
+            possiblePaths,
           });
         } else {
           logger.info("FFmpeg is available and ready", {
             formatsCount: Object.keys(formats || {}).length,
+            sampleFormats: Object.keys(formats || {}).slice(0, 5),
           });
         }
       });
+
+      // Additional FFmpeg diagnostics
+      ffmpeg("/dev/null")
+        .format("null")
+        .on("error", (err) => {
+          logger.debug("FFmpeg test command failed (expected)", {
+            error: err.message,
+          });
+        })
+        .on("start", (cmd) => {
+          logger.info("FFmpeg test command started successfully", {
+            command: cmd,
+          });
+        });
     } catch (error) {
       logger.error("Failed to setup FFmpeg", { error: error.message });
     }
@@ -105,51 +121,106 @@ class VideoService {
           `${inputFilename}_watermarked.mp4`
         );
         logger.info(`Adding watermark to video: ${inputVideoPath}`);
-        ffmpeg(inputVideoPath)
-          .input(this.watermarkPath)
-          .complexFilter([
-            // Scale watermark to 40% of video width for better visibility (increased from 25%)
-            "[1:v]scale=iw*0.4:-1[watermark_scaled]",
-            // Add a semi-transparent background to make watermark more visible
-            "[watermark_scaled]pad=iw+20:ih+20:10:10:color=black@0.5[watermark_bg]",
-            // Overlay watermark at top-left corner with padding for visibility
-            "[0:v][watermark_bg]overlay=20:20",
-          ])
-          .outputOptions([
-            "-c:a copy", // Copy audio without re-encoding
-            "-c:v libx264", // Use H.264 for video
-            "-preset medium", // Better quality preset
-            "-crf 16", // Higher quality for better watermark visibility (lower CRF = higher quality)
-            "-pix_fmt yuv420p", // Ensure compatibility
-            "-movflags +faststart", // Optimize for web streaming
-          ])
-          .output(outputPath)
-          .on("start", (commandLine) => {
-            logger.debug("FFmpeg started", { command: commandLine });
-          })
-          .on("progress", (progress) => {
-            logger.debug(`Processing: ${progress.percent?.toFixed(2)}% done`);
-          })
-          .on("end", () => {
-            logger.info(`Successfully added watermark: ${outputPath}`);
-            resolve(outputPath);
-          })
-          .on("error", (error) => {
-            logger.error("FFmpeg processing failed", {
-              error: error.message,
-              inputPath: inputVideoPath,
-              outputPath: outputPath,
+        logger.info(`Watermark file path: ${this.watermarkPath}`);
+        logger.info(`Output path: ${outputPath}`); // Add timeout to prevent hanging
+        const timeoutMs = 30000; // 30 seconds timeout (reduced from 1 minute)
+        let ffmpegProcess;
+        let timeoutId;
+
+        const timeoutPromise = new Promise((_, timeoutReject) => {
+          timeoutId = setTimeout(() => {
+            if (ffmpegProcess) {
+              ffmpegProcess.kill("SIGKILL");
+            }
+            timeoutReject(
+              new Error("FFmpeg watermarking timed out after 30 seconds")
+            );
+          }, timeoutMs);
+        });
+
+        const ffmpegPromise = new Promise((ffmpegResolve, ffmpegReject) => {
+          ffmpegProcess = ffmpeg(inputVideoPath)
+            .input(this.watermarkPath)
+            .complexFilter([
+              // Scale watermark to 40% of video width for better visibility (increased from 25%)
+              "[1:v]scale=iw*0.4:-1[watermark_scaled]",
+              // Add a semi-transparent background to make watermark more visible
+              "[watermark_scaled]pad=iw+20:ih+20:10:10:color=black@0.5[watermark_bg]",
+              // Overlay watermark at top-left corner with padding for visibility
+              "[0:v][watermark_bg]overlay=20:20",
+            ])
+            .outputOptions([
+              "-c:a copy", // Copy audio without re-encoding
+              "-c:v libx264", // Use H.264 for video
+              "-preset ultrafast", // Faster preset for cloud environments
+              "-crf 23", // Balanced quality for speed
+              "-pix_fmt yuv420p", // Ensure compatibility
+              "-movflags +faststart", // Optimize for web streaming
+            ])
+            .output(outputPath)
+            .on("start", (commandLine) => {
+              logger.info("FFmpeg started successfully", {
+                command: commandLine,
+                inputPath: inputVideoPath,
+                watermarkPath: this.watermarkPath,
+              });
+            })
+            .on("progress", (progress) => {
+              logger.info(
+                `Watermarking progress: ${progress.percent?.toFixed(2)}% done`,
+                {
+                  timemark: progress.timemark,
+                  currentFps: progress.currentFps,
+                }
+              );
+            })
+            .on("stderr", (stderrLine) => {
+              logger.debug("FFmpeg stderr", { line: stderrLine });
+            })
+            .on("end", () => {
+              logger.info(`Successfully added watermark: ${outputPath}`);
+              clearTimeout(timeoutId);
+              ffmpegResolve(outputPath);
+            })
+            .on("error", (error) => {
+              logger.error("FFmpeg processing failed", {
+                error: error.message,
+                inputPath: inputVideoPath,
+                watermarkPath: this.watermarkPath,
+                outputPath: outputPath,
+              });
+              clearTimeout(timeoutId);
+              ffmpegReject(
+                new Error(`Video processing failed: ${error.message}`)
+              );
             });
-            reject(new Error(`Video processing failed: ${error.message}`));
-          })
-          .run();
+
+          // Start the process
+          try {
+            ffmpegProcess.run();
+          } catch (runError) {
+            logger.error("Failed to start FFmpeg process", {
+              error: runError.message,
+            });
+            clearTimeout(timeoutId);
+            ffmpegReject(runError);
+          }
+        });
+
+        // Race between FFmpeg and timeout
+        try {
+          const result = await Promise.race([ffmpegPromise, timeoutPromise]);
+          return result;
+        } catch (error) {
+          logger.error("Watermarking failed", { error: error.message });
+          throw error;
+        }
       } catch (error) {
         logger.error("Failed to add watermark", { error: error.message });
         reject(error);
       }
     });
   }
-
   /**
    * Fallback watermarking - copy video without watermark if FFmpeg fails
    */
@@ -167,10 +238,19 @@ class VideoService {
       logger.warn("Using fallback watermarking (copy without watermark)", {
         input: inputVideoPath,
         output: outputPath,
+        reason: "FFmpeg watermarking failed or unavailable",
       });
+
+      // Ensure output directory exists
+      await fs.ensureDir(outputDir);
 
       // Simply copy the file as fallback
       await fs.copy(inputVideoPath, outputPath);
+
+      logger.info("Fallback copy completed successfully", {
+        outputPath,
+        note: "Video copied without watermark due to FFmpeg issues",
+      });
 
       return outputPath;
     } catch (error) {

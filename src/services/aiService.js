@@ -129,20 +129,14 @@ Generate only the hashtags, no extra text.
         logger.info("Successfully generated AI hashtags", { videoName });
         return hashtags.trim();
       } else {
-        return (
-          process.env.DEFAULT_HASHTAGS ||
-          "#aivideo #artificialintelligence #ai #tech #automation #viral #video #content #innovation #amazing #trending"
-        );
+        return "#aivideo #artificialintelligence #ai #tech #automation #viral #video #content #innovation #amazing #trending";
       }
     } catch (error) {
       logger.error("Failed to generate AI hashtags", {
         error: error.message,
         videoName,
       });
-      return (
-        process.env.DEFAULT_HASHTAGS ||
-        "#aivideo #artificialintelligence #ai #tech #automation #viral #video #content #innovation #amazing #trending"
-      );
+      return "#aivideo #artificialintelligence #ai #tech #automation #viral #video #content #innovation #amazing #trending";
     }
   }
 
@@ -155,7 +149,6 @@ Generate only the hashtags, no extra text.
         return {
           caption: process.env.DEFAULT_CAPTION || "Amazing video! 🎥✨",
           hashtags:
-            process.env.DEFAULT_HASHTAGS ||
             "#aivideo #artificialintelligence #ai #tech #automation #viral #video #content #innovation #amazing #trending",
         };
       }
@@ -170,7 +163,6 @@ Generate only the hashtags, no extra text.
           caption || process.env.DEFAULT_CAPTION || "Amazing video! 🎥✨",
         hashtags:
           hashtags ||
-          process.env.DEFAULT_HASHTAGS ||
           "#aivideo #artificialintelligence #ai #tech #automation #viral #video #content #innovation #amazing #trending",
       };
     } catch (error) {
@@ -182,7 +174,6 @@ Generate only the hashtags, no extra text.
       return {
         caption: process.env.DEFAULT_CAPTION || "Amazing video! 🎥✨",
         hashtags:
-          process.env.DEFAULT_HASHTAGS ||
           "#aivideo #artificialintelligence #ai #tech #automation #viral #video #content #innovation #amazing #trending",
       };
     }

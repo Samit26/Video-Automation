@@ -67,7 +67,7 @@ app.get("/status", (req, res) => {
 /**
  * Process video endpoint - triggered by external cron
  */
-app.post("/process", async (req, res) => {
+app.get("/process", async (req, res) => {
   try {
     // Check if already processing
     if (isProcessing) {
@@ -79,22 +79,7 @@ app.post("/process", async (req, res) => {
       });
     }
 
-    // Validate authorization if provided
-    const authToken = req.headers.authorization || req.query.token;
-    const expectedToken = process.env.CRON_AUTH_TOKEN;
-
-    if (
-      expectedToken &&
-      authToken !== `Bearer ${expectedToken}` &&
-      authToken !== expectedToken
-    ) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized",
-      });
-    }
-
-    // Start processing
+    // Start processing (no authentication required - using env variables)
     logger.info("Starting video processing via HTTP trigger");
     isProcessing = true;
     lastProcessTime = new Date().toISOString();

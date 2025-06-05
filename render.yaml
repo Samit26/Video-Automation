@@ -4,16 +4,19 @@ services:
     env: node
     plan: free
     buildCommand: npm install && npm run build-ffmpeg
-    startCommand: npm start
-    envVars:
+    startCommand: npm start    envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
       # Add your environment variables here
-      - key: GOOGLE_CREDENTIALS_JSON
+      - key: GOOGLE_CLIENT_ID
         sync: false # Set this in Render dashboard
-      - key: GOOGLE_DRIVE_FOLDER_ID
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REFRESH_TOKEN
+        sync: false
+      - key: GOOGLE_DRIVE_LINKS
         sync: false
       - key: INSTAGRAM_USERNAME
         sync: false

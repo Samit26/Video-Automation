@@ -47,9 +47,11 @@ In Render dashboard, go to your service → Environment tab and add:
 ### Required Variables:
 
 ```bash
-# Google Drive (from Google Cloud Console)
-GOOGLE_CREDENTIALS_JSON={"type":"service_account",...}
-GOOGLE_DRIVE_FOLDER_ID=1ABC123def456GHI789
+# Google Drive (OAuth2 - from Google Cloud Console)
+GOOGLE_CLIENT_ID=your_google_client_id_here
+GOOGLE_CLIENT_SECRET=your_google_client_secret_here
+GOOGLE_REFRESH_TOKEN=your_google_refresh_token_here
+GOOGLE_DRIVE_LINKS=https://drive.google.com/drive/folders/YOUR_FOLDER_ID
 
 # Instagram Credentials
 INSTAGRAM_USERNAME=your_instagram_username

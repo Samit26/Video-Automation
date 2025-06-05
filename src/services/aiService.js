@@ -22,7 +22,7 @@ class AIService {
         return;
       }
       this.genAI = new GoogleGenerativeAI(apiKey);
-      this.model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
       logger.info("Gemini AI initialized successfully");
     } catch (error) {
@@ -97,7 +97,7 @@ Generate only the caption text, no extra formatting or quotes.
   async generateHashtags(videoName, caption = "") {
     try {
       if (!this.model) {
-        return "#aivideo #artificialintelligence #ai #tech #automation #viral #video #content #innovation #amazing #trending";
+        return "#ai #artificialintelligence #machinelearning #deeplearning #neuralnetworks #tech #innovation #automation #robotics #futuretech #digitalart #aiart #techtrends #coding #programming #data #analytics #smarttech #aivideo #viral #trending #amazing #content #video";
       }
       const prompt = `
 Generate relevant Instagram hashtags for a video named: "${videoName}"

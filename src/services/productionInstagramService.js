@@ -392,7 +392,7 @@ class ProductionInstagramService {
         baseCaption || process.env.DEFAULT_CAPTION || "Amazing video! 🎥✨"; // Add default hashtags if not present
       const defaultHashtags =
         process.env.DEFAULT_HASHTAGS ||
-        "#aivideo #artificialintelligence #ai #tech #automation #viral #video #content #innovation #amazing #trending";
+        "#ai #artificialintelligence #machinelearning #deeplearning #neuralnetworks #tech #innovation #automation #robotics #futuretech #digitalart #aiart #techtrends #coding #programming #data #analytics #smarttech #aivideo #viral #trending #amazing #content #video";
 
       // Check if caption already has hashtags
       if (!caption.includes("#")) {
@@ -408,7 +408,7 @@ class ProductionInstagramService {
       return caption;
     } catch (error) {
       logger.error("Failed to prepare caption", { error: error.message });
-      return "Amazing video! 🎥✨ #video #content #tech #ai";
+      return "🤖 Amazing AI content! Check this out! ✨ #ai #tech #innovation #viral";
     }
   }
 

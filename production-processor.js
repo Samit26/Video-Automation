@@ -197,15 +197,19 @@ class ProductionVideoProcessor {
         path: processedPath,
         duration: `${((Date.now() - processStartTime) / 1000).toFixed(1)}s`,
         note: "No watermark applied for faster processing",
-      });
-
-      // Step 3: Generate AI caption
+      }); // Step 3: Generate AI caption
       logger.info("🤖 Step 3: Generating AI caption...");
       const captionStartTime = Date.now();
       const caption = await this.aiService.generateCaption(video.name);
+
+      // Handle null caption from AI service
+      const finalCaption =
+        caption || "🤖 Amazing AI content! Check this out! ✨";
+
       logger.info("✅ AI caption generated", {
-        caption: caption.substring(0, 100) + "...",
+        caption: finalCaption.substring(0, 100) + "...",
         duration: `${((Date.now() - captionStartTime) / 1000).toFixed(1)}s`,
+        usingFallback: !caption,
       });
 
       // Step 4: Upload to Instagram
@@ -213,7 +217,7 @@ class ProductionVideoProcessor {
       const uploadStartTime = Date.now();
       const uploadResult = await this.instagramService.uploadVideoWithRetry(
         processedPath,
-        caption
+        finalCaption
       );
       logger.info("✅ Instagram upload completed", {
         postId: uploadResult.postId,
@@ -226,7 +230,7 @@ class ProductionVideoProcessor {
         name: video.name,
         processedAt: new Date().toISOString(),
         uploadResult: uploadResult,
-        caption: caption,
+        caption: finalCaption,
         processingTime: Date.now() - startTime,
         success: true,
       });

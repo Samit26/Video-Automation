@@ -29,11 +29,10 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: CRON_AUTH_TOKEN
-        sync: false
-      - key: MOCK_INSTAGRAM
+        sync: false      - key: MOCK_INSTAGRAM
         value: false
       - key: DEFAULT_HASHTAGS
-        value: "#video #content #viral #tech #ai"
+        value: "#aivideo #artificialintelligence #ai #tech #automation #viral #video #content #innovation #machinelearning #deeplearning #aiart #creative #amazing #trending #future #digitalart #computer #technology #algorithm"
       - key: DEFAULT_CAPTION
         value: "Amazing video! 🎥✨"
     healthCheckPath: /health

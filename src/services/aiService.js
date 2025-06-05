@@ -97,19 +97,24 @@ Generate only the caption text, no extra formatting or quotes.
   async generateHashtags(videoName, caption = "") {
     try {
       if (!this.model) {
-        return process.env.DEFAULT_HASHTAGS || "#video #content #viral";
+        return "#aivideo #artificialintelligence #ai #tech #automation #viral #video #content #innovation #amazing #trending";
       }
-
       const prompt = `
 Generate relevant Instagram hashtags for a video named: "${videoName}"
 ${caption ? `Caption: "${caption}"` : ""}
 
+This is likely an AI-generated or technology-related video. 
+
 Requirements:
-- Generate 8-12 relevant hashtags
+- Generate 15-20 relevant hashtags
 - Mix popular and niche hashtags
-- Focus on video content, entertainment, and engagement
+- Focus on AI, technology, automation, innovation themes
+- Include general video engagement hashtags
+- Popular AI hashtags: #aivideo #artificialintelligence #ai #tech #automation #innovation #machinelearning #deeplearning #aiart #digital #future #algorithm #computer #technology
+- Engagement hashtags: #viral #trending #amazing #creative #content #video #cool #awesome #mind-blowing #fascinating
 - Return as a single line separated by spaces
 - Start each hashtag with #
+- No duplicate hashtags
 
 Generate only the hashtags, no extra text.
       `.trim();
@@ -124,14 +129,20 @@ Generate only the hashtags, no extra text.
         logger.info("Successfully generated AI hashtags", { videoName });
         return hashtags.trim();
       } else {
-        return process.env.DEFAULT_HASHTAGS || "#video #content #viral";
+        return (
+          process.env.DEFAULT_HASHTAGS ||
+          "#aivideo #artificialintelligence #ai #tech #automation #viral #video #content #innovation #amazing #trending"
+        );
       }
     } catch (error) {
       logger.error("Failed to generate AI hashtags", {
         error: error.message,
         videoName,
       });
-      return process.env.DEFAULT_HASHTAGS || "#video #content #viral";
+      return (
+        process.env.DEFAULT_HASHTAGS ||
+        "#aivideo #artificialintelligence #ai #tech #automation #viral #video #content #innovation #amazing #trending"
+      );
     }
   }
 
@@ -143,7 +154,9 @@ Generate only the hashtags, no extra text.
       if (!this.model) {
         return {
           caption: process.env.DEFAULT_CAPTION || "Amazing video! 🎥✨",
-          hashtags: process.env.DEFAULT_HASHTAGS || "#video #content #viral",
+          hashtags:
+            process.env.DEFAULT_HASHTAGS ||
+            "#aivideo #artificialintelligence #ai #tech #automation #viral #video #content #innovation #amazing #trending",
         };
       }
 
@@ -152,12 +165,13 @@ Generate only the hashtags, no extra text.
         this.generateCaption(videoName, context),
         this.generateHashtags(videoName, context),
       ]);
-
       return {
         caption:
           caption || process.env.DEFAULT_CAPTION || "Amazing video! 🎥✨",
         hashtags:
-          hashtags || process.env.DEFAULT_HASHTAGS || "#video #content #viral",
+          hashtags ||
+          process.env.DEFAULT_HASHTAGS ||
+          "#aivideo #artificialintelligence #ai #tech #automation #viral #video #content #innovation #amazing #trending",
       };
     } catch (error) {
       logger.error("Failed to generate post content", {
@@ -167,7 +181,9 @@ Generate only the hashtags, no extra text.
 
       return {
         caption: process.env.DEFAULT_CAPTION || "Amazing video! 🎥✨",
-        hashtags: process.env.DEFAULT_HASHTAGS || "#video #content #viral",
+        hashtags:
+          process.env.DEFAULT_HASHTAGS ||
+          "#aivideo #artificialintelligence #ai #tech #automation #viral #video #content #innovation #amazing #trending",
       };
     }
   }

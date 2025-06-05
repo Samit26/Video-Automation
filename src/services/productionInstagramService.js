@@ -391,9 +391,9 @@ class ProductionInstagramService {
       let caption =
         baseCaption || process.env.DEFAULT_CAPTION || "Amazing video! 🎥✨";
 
-      // Add default hashtags if not present
-      const defaultHashtags =
-        process.env.DEFAULT_HASHTAGS || "#video #content #viral #tech #ai";
+      // Add default hashtags if not present        const defaultHashtags =
+      process.env.DEFAULT_HASHTAGS ||
+        "#aivideo #artificialintelligence #ai #tech #automation #viral #video #content #innovation #amazing #trending";
 
       // Check if caption already has hashtags
       if (!caption.includes("#")) {

@@ -68,7 +68,7 @@ CRON_AUTH_TOKEN=your_secure_random_token_123
 
 ```bash
 MOCK_INSTAGRAM=false
-DEFAULT_HASHTAGS=#video #content #viral #tech #ai
+DEFAULT_HASHTAGS=#aivideo #artificialintelligence #ai #tech #automation #viral #video #content #innovation #machinelearning #deeplearning #aiart #creative #amazing #trending #future #digitalart #computer #technology #algorithm
 DEFAULT_CAPTION=Amazing video! 🎥✨
 WATERMARK_PATH=./assets/watermark.png
 ```

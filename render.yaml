@@ -4,7 +4,11 @@ services:
     env: node
     plan: free
     buildCommand: npm install && npm run build-ffmpeg
-    startCommand: npm start    envVars:
+    startCommand: npm start
+    # Install FFmpeg via apt packages
+    aptPackages:
+      - ffmpeg
+    envVars:
       - key: NODE_ENV
         value: production
       - key: PORT

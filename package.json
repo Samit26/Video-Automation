@@ -7,7 +7,7 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "process": "node production-processor.js",
-    "build-ffmpeg": "echo 'FFmpeg should be available on Render'",
+    "build-ffmpeg": "which ffmpeg && ffmpeg -version || echo 'FFmpeg installation required'",
     "test": "node scripts/test.js",
     "maintenance": "node scripts/maintenance.js",
     "emergency-cleanup": "node scripts/maintenance.js --emergency",

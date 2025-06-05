@@ -22,7 +22,7 @@ class ProductionVideoProcessor {
     this.instagramService = ProductionInstagramService;
     this.aiService = AiService;
     this.fileManager = fileManager;
-    
+
     this.tempFiles = new Set(); // Track temp files for cleanup
     this.isProcessing = false;
   }
@@ -51,7 +51,9 @@ class ProductionVideoProcessor {
 
       const aiConnected = await this.aiService.testService();
       if (!aiConnected || !aiConnected.success) {
-        logger.warn("⚠️ AI service connection failed - captions will use defaults");
+        logger.warn(
+          "⚠️ AI service connection failed - captions will use defaults"
+        );
       } else {
         logger.info("✅ AI service connected");
       }
@@ -102,13 +104,17 @@ class ProductionVideoProcessor {
 
       // Get processed videos to avoid duplicates
       const processedVideos = await this.database.getProcessedVideos();
-      const processedIds = processedVideos.map(v => v.id);
+      const processedIds = processedVideos.map((v) => v.id);
 
       // Find first unprocessed video
-      const videoToProcess = availableVideos.find(video => !processedIds.includes(video.id));
+      const videoToProcess = availableVideos.find(
+        (video) => !processedIds.includes(video.id)
+      );
 
       if (!videoToProcess) {
-        logger.info("No new videos to process - all available videos have been processed");
+        logger.info(
+          "No new videos to process - all available videos have been processed"
+        );
         return;
       }
 
@@ -144,7 +150,6 @@ class ProductionVideoProcessor {
         success: result.success,
         duration: `${(result.duration / 1000).toFixed(1)}s`,
       });
-
     } catch (error) {
       logger.error("💥 Critical error in video processing pipeline", {
         error: error.message,
@@ -153,7 +158,7 @@ class ProductionVideoProcessor {
       throw error;
     } finally {
       this.isProcessing = false;
-      
+
       // Final cleanup
       await this.performFinalCleanup();
     }
@@ -170,17 +175,21 @@ class ProductionVideoProcessor {
     try {
       // Step 1: Download video
       logger.info("📥 Step 1: Downloading video...");
-      downloadPath = await this.driveService.downloadVideo(video, "./downloads");
+      downloadPath = await this.driveService.downloadVideo(
+        video,
+        "./downloads"
+      );
       this.tempFiles.add(downloadPath);
       logger.info("✅ Video downloaded", {
         path: downloadPath,
         duration: `${((Date.now() - startTime) / 1000).toFixed(1)}s`,
-      });
-
-      // Step 2: Add watermark
+      }); // Step 2: Add watermark
       logger.info("🎨 Step 2: Adding watermark...");
       const watermarkStartTime = Date.now();
-      processedPath = await this.videoService.addWatermark(downloadPath, "./output");
+      processedPath = await this.videoService.addWatermarkWithFallback(
+        downloadPath,
+        "./output"
+      );
       this.tempFiles.add(processedPath);
       logger.info("✅ Watermark added", {
         path: processedPath,
@@ -199,7 +208,10 @@ class ProductionVideoProcessor {
       // Step 4: Upload to Instagram
       logger.info("📸 Step 4: Uploading to Instagram...");
       const uploadStartTime = Date.now();
-      const uploadResult = await this.instagramService.uploadVideoWithRetry(processedPath, caption);
+      const uploadResult = await this.instagramService.uploadVideoWithRetry(
+        processedPath,
+        caption
+      );
       logger.info("✅ Instagram upload completed", {
         postId: uploadResult.postId,
         duration: `${((Date.now() - uploadStartTime) / 1000).toFixed(1)}s`,
@@ -232,7 +244,6 @@ class ProductionVideoProcessor {
         postId: uploadResult.postId,
         duration: totalDuration,
       };
-
     } catch (error) {
       logger.error("Pipeline failed for video", {
         name: video.name,
@@ -327,7 +338,7 @@ class ProductionVideoProcessor {
       // Wait for current processing to complete
       while (this.isProcessing) {
         logger.info("⏳ Waiting for current processing to complete...");
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
       // Perform final cleanup

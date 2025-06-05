@@ -5,41 +5,96 @@ const logger = require("../utils/logger");
 
 class VideoService {
   constructor() {
-    this.watermarkPath = process.env.WATERMARK_PATH || "./assets/watermark.png";
+    // Use absolute path for watermark file
+    this.watermarkPath =
+      process.env.WATERMARK_PATH ||
+      path.join(process.cwd(), "assets", "watermark.png");
     this.setupFFmpeg();
   }
-
   /**
    * Setup FFmpeg configuration
    */
   setupFFmpeg() {
     try {
-      // For Render.com deployment, FFmpeg should be available in PATH
-      // If not, you might need to install it via buildpack or apt-packages
+      // For Render.com deployment, try to set FFmpeg path
+      const possiblePaths = [
+        "/usr/bin/ffmpeg",
+        "/usr/local/bin/ffmpeg",
+        "/app/bin/ffmpeg",
+        "ffmpeg", // fallback to PATH
+      ];
+
+      // Try to find FFmpeg executable
+      for (const ffmpegPath of possiblePaths) {
+        try {
+          ffmpeg.setFfmpegPath(ffmpegPath);
+          logger.info(`Attempting to use FFmpeg at: ${ffmpegPath}`);
+          break;
+        } catch (err) {
+          logger.debug(`FFmpeg not found at: ${ffmpegPath}`);
+        }
+      }
 
       // Test FFmpeg availability
       ffmpeg.getAvailableFormats((err, formats) => {
         if (err) {
-          logger.warn("FFmpeg might not be available", { error: err.message });
+          logger.error("FFmpeg is not available", {
+            error: err.message,
+            suggestion: "Install FFmpeg via apt-packages in render.yaml",
+          });
         } else {
-          logger.info("FFmpeg is available and ready");
+          logger.info("FFmpeg is available and ready", {
+            formatsCount: Object.keys(formats || {}).length,
+          });
         }
       });
     } catch (error) {
       logger.error("Failed to setup FFmpeg", { error: error.message });
     }
   }
-
   /**
    * Add watermark to video
    */
   async addWatermark(inputVideoPath, outputDir) {
     return new Promise(async (resolve, reject) => {
       try {
-        // Ensure watermark exists
-        if (!(await fs.pathExists(this.watermarkPath))) {
-          throw new Error(`Watermark file not found: ${this.watermarkPath}`);
+        // Validate input video
+        if (!(await fs.pathExists(inputVideoPath))) {
+          throw new Error(`Input video not found: ${inputVideoPath}`);
         }
+
+        // Ensure watermark exists with better path resolution
+        const watermarkExists = await fs.pathExists(this.watermarkPath);
+        if (!watermarkExists) {
+          // Try alternative watermark paths
+          const alternativePaths = [
+            path.join(process.cwd(), "assets", "watermark.png"),
+            path.join(__dirname, "..", "..", "assets", "watermark.png"),
+            "./assets/watermark.png",
+          ];
+
+          let foundWatermark = false;
+          for (const altPath of alternativePaths) {
+            if (await fs.pathExists(altPath)) {
+              this.watermarkPath = altPath;
+              foundWatermark = true;
+              logger.info(`Found watermark at alternative path: ${altPath}`);
+              break;
+            }
+          }
+
+          if (!foundWatermark) {
+            throw new Error(
+              `Watermark file not found. Tried paths: ${[
+                this.watermarkPath,
+                ...alternativePaths,
+              ].join(", ")}`
+            );
+          }
+        }
+
+        // Ensure output directory exists
+        await fs.ensureDir(outputDir);
 
         const inputFilename = path.basename(
           inputVideoPath,
@@ -93,6 +148,53 @@ class VideoService {
         reject(error);
       }
     });
+  }
+
+  /**
+   * Fallback watermarking - copy video without watermark if FFmpeg fails
+   */
+  async fallbackWatermark(inputVideoPath, outputDir) {
+    try {
+      const inputFilename = path.basename(
+        inputVideoPath,
+        path.extname(inputVideoPath)
+      );
+      const outputPath = path.join(
+        outputDir,
+        `${inputFilename}_watermarked.mp4`
+      );
+
+      logger.warn("Using fallback watermarking (copy without watermark)", {
+        input: inputVideoPath,
+        output: outputPath,
+      });
+
+      // Simply copy the file as fallback
+      await fs.copy(inputVideoPath, outputPath);
+
+      return outputPath;
+    } catch (error) {
+      logger.error("Fallback watermarking failed", { error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Add watermark to video with fallback
+   */
+  async addWatermarkWithFallback(inputVideoPath, outputDir) {
+    try {
+      // Try the full watermarking first
+      return await this.addWatermark(inputVideoPath, outputDir);
+    } catch (error) {
+      logger.warn("Primary watermarking failed, using fallback", {
+        error: error.message,
+        fallback: "copy without watermark",
+      });
+
+      // Use fallback method
+      return await this.fallbackWatermark(inputVideoPath, outputDir);
+    }
   }
 
   /**

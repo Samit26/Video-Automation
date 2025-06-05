@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: video-automation-service
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build-ffmpeg
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      # Add your environment variables here
+      - key: GOOGLE_CREDENTIALS_JSON
+        sync: false # Set this in Render dashboard
+      - key: GOOGLE_DRIVE_FOLDER_ID
+        sync: false
+      - key: INSTAGRAM_USERNAME
+        sync: false
+      - key: INSTAGRAM_PASSWORD
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: CRON_AUTH_TOKEN
+        sync: false
+      - key: MOCK_INSTAGRAM
+        value: false
+      - key: DEFAULT_HASHTAGS
+        value: "#video #content #viral #tech #ai"
+      - key: DEFAULT_CAPTION
+        value: "Amazing video! 🎥✨"
+    healthCheckPath: /health
+    autoDeploy: false
+    region: oregon # Free tier region
+    maxMemory: 512MB # Free tier limit

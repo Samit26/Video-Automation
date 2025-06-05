@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  video-automation:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/usr/src/app/logs
+      - ./temp:/usr/src/app/temp
+      - ./output:/usr/src/app/output
+      - ./data:/usr/src/app/data
+      - ./assets:/usr/src/app/assets
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
